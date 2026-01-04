@@ -1,99 +1,136 @@
-import { useState, useRef } from "react";
-import { LogOutIcon, VolumeOffIcon, Volume2Icon } from "lucide-react";
-import { useAuthStore } from "../store/useAuthStore";
-import { useChatStore } from "../store/useChatStore";
+import React, { useState, useRef, useEffect, useContext } from "react";
+import {
+  UserCircle2,
+  Plus,
+  Settings,
+  LogOut,
+  User,
+  Bell,
+  Shield,
+} from "lucide-react";
+import AddContact from "./AddContact";
+import { useDispatch, useSelector } from "react-redux";
+import { resetSaveContactStates } from "../features/socket/socketSlice";
+import { context } from "../context/context";
+import {
+  authMeFun,
+  logoutFun,
+  resetAllStates,
+} from "../features/auth/authSlice";
+import toast from "react-hot-toast";
 
-const mouseClickSound = new Audio("/sounds/mouse-click.mp3");
+const ProfileHeader = () => {
+  const { logoutStates } = useSelector((state) => state.auth);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-function ProfileHeader() {
-  const { logout, authUser, updateProfile } = useAuthStore();
-  const { isSoundEnabled, toggleSound } = useChatStore();
-  const [selectedImg, setSelectedImg] = useState(null);
-
-  const fileInputRef = useRef(null);
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-
-    reader.onloadend = async () => {
-      const base64Image = reader.result;
-      setSelectedImg(base64Image);
-      await updateProfile({ profilePic: base64Image });
+  const { isAddContactOpen, setIsAddContactOpen } = useContext(context);
+  const dropdownRef = useRef(null);
+  const dispatch = useDispatch();
+  // Handle click outside for dropdown closure
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsSettingsOpen(false);
+      }
     };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+  const handleLogout = () => {
+    setIsSettingsOpen(!isSettingsOpen);
+    toast.promise(dispatch(logoutFun()), {
+      loading: "Loging Out...",
+      success: <span>Loging out Successfully See you soon</span>,
+      error: <span>Could not Logout.</span>,
+    });
   };
 
+  useEffect(() => {
+    if (logoutStates.result === "logout") {
+      dispatch(authMeFun());
+      dispatch(resetAllStates());
+    }
+  }, [logoutStates]);
   return (
-    <div className="p-6 border-b border-slate-700/50">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {/* AVATAR */}
-          <div className="avatar online">
-            <button
-              className="size-14 rounded-full overflow-hidden relative group"
-              onClick={() => fileInputRef.current.click()}
-            >
-              <img
-                src={selectedImg || authUser.profilePic || "/avatar.png"}
-                alt="User image"
-                className="size-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <span className="text-white text-xs">Change</span>
-              </div>
-            </button>
-
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              onChange={handleImageUpload}
-              className="hidden"
-            />
+    <div className="flex items-center justify-between w-full relative">
+      {/* User Info / Avatar Section */}
+      <div className="flex items-center gap-3">
+        <div className="relative group cursor-pointer">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-violet-500 to-fuchsia-500 flex items-center justify-center text-white shadow-lg shadow-violet-500/20 group-hover:scale-105 transition-transform">
+            <UserCircle2 className="h-7 w-7" />
           </div>
-
-          {/* USERNAME & ONLINE TEXT */}
-          <div>
-            <h3 className="text-slate-200 font-medium text-base max-w-[180px] truncate">
-              {authUser.fullName}
-            </h3>
-
-            <p className="text-slate-400 text-xs">Online</p>
-          </div>
-        </div>
-
-        {/* BUTTONS */}
-        <div className="flex gap-4 items-center">
-          {/* LOGOUT BTN */}
-          <button
-            className="text-slate-400 hover:text-slate-200 transition-colors"
-            onClick={logout}
-          >
-            <LogOutIcon className="size-5" />
-          </button>
-
-          {/* SOUND TOGGLE BTN */}
-          <button
-            className="text-slate-400 hover:text-slate-200 transition-colors"
-            onClick={() => {
-              // play click sound before toggling
-              mouseClickSound.currentTime = 0; // reset to start
-              mouseClickSound.play().catch((error) => console.log("Audio play failed:", error));
-              toggleSound();
-            }}
-          >
-            {isSoundEnabled ? (
-              <Volume2Icon className="size-5" />
-            ) : (
-              <VolumeOffIcon className="size-5" />
-            )}
-          </button>
+          <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-green-500 border-2 border-[#0f172a] rounded-full shadow-sm"></div>
         </div>
       </div>
+
+      {/* Action Buttons: Add Contact & Settings */}
+      <div className="flex gap-1 sm:gap-2 relative">
+        <button
+          onClick={() => setIsAddContactOpen(true)}
+          className="p-2 hover:bg-white/5 rounded-lg transition-colors text-slate-400 hover:text-violet-400 group"
+          title="Add Contact"
+        >
+          <Plus className="h-5 w-5 transition-transform group-hover:rotate-90" />
+        </button>
+
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+            className={`p-2 rounded-lg transition-all duration-200 ${
+              isSettingsOpen
+                ? "bg-violet-500/20 text-violet-400"
+                : "text-slate-400 hover:bg-white/5 hover:text-white"
+            }`}
+          >
+            <Settings
+              className={`h-5 w-5 ${
+                isSettingsOpen ? "rotate-45" : ""
+              } transition-transform duration-300`}
+            />
+          </button>
+
+          {/* Settings Dropdown Menu */}
+          {isSettingsOpen && (
+            <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[#1e293b] border border-white/10 shadow-2xl z-50 overflow-hidden backdrop-blur-xl py-2 animate-in fade-in zoom-in duration-200 origin-top-right">
+              <div className="px-4 py-2 border-b border-white/5 mb-1">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                  Account
+                </p>
+              </div>
+
+              <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                <User className="h-4 w-4 text-violet-400" />
+                Edit Profile
+              </button>
+
+              <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                <Bell className="h-4 w-4 text-violet-400" />
+                Notifications
+              </button>
+
+              <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                <Shield className="h-4 w-4 text-violet-400" />
+                Privacy
+              </button>
+
+              <div className="h-[1px] bg-white/5 my-1" />
+
+              <button
+                onClick={handleLogout}
+                type="button"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-rose-400 hover:bg-rose-500/10 transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Add Contact Modal - Conditional Rendering */}
     </div>
   );
-}
+};
+
 export default ProfileHeader;

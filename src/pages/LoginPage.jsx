@@ -1,9 +1,72 @@
+import { useContext, useState } from "react";
 import BorderAnimatedContainer from "../components/BorderAnimatedContainer";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { context } from "../context/context";
+import { useDispatch, useSelector } from "react-redux";
+import { authMeFun, loginFun } from "../features/auth/authSlice";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
+import Checkbox from "../components/ui/Tick";
+import ApiLoader from "../components/ui/ApiLoder";
 
 function LoginPage() {
+  const Navigate = useNavigate();
+  const Dispatch = useDispatch();
+  const { loginStates, authMeStates } = useSelector((state) => state.auth);
+  const [email, setEmail] = useState(null);
+  const [password, setPassword] = useState(null);
+  const [showPass, setShowPass] = useState(false);
+  const [error, setError] = useState({
+    passError: false,
+    emailError: false,
+  });
+
+  const handelLogin = () => {
+    if (!email || !password) {
+      setError({
+        passError: "please enter the password",
+        emailError: "please enter the email ",
+      });
+      toast.error("please enter the email and password");
+    }
+
+    toast.promise(Dispatch(loginFun({ email, password })), {
+      loading: "Loging in...",
+      success: <span>Loging In Successfully Welcom back {email}</span>,
+      error: <span>Could not LogIn.</span>,
+    });
+  };
+
+  useEffect(() => {
+    if (loginStates?.error) {
+      if (loginStates?.result === "invalid Credentials") {
+        toast.error("please enter the correct email and password");
+        setEmail("");
+        setPassword("");
+        setError({
+          passError: "please enter the correct password",
+          emailError: "please enter the Correct email ",
+        });
+      } else if (loginStates?.result === "Invalid Email") {
+        toast.error("please enter the correct email ");
+        setEmail("");
+        setError({ ...error, emailError: "please enter the email " });
+      } else if (loginStates?.result === "Invalid pass") {
+        toast.error("please enter the correct password ");
+        setPassword("");
+        setError({ ...error, passError: "please enter the password " });
+      }
+    }
+    if (loginStates.success) {
+      if (loginStates.result === "user login Successfully") {
+        setTimeout(() => {
+          Dispatch(authMeFun());
+        }, 500);
+      }
+    }
+  }, [loginStates]);
   return (
-    <div className="w-full flex items-center justify-center p-4 bg-slate-900">
+    <div className="w-full flex items-center justify-center p-1 md:p-4 bg-slate-900">
       <div className="relative w-full max-w-6xl md:h-[800px] h-[650px]">
         <BorderAnimatedContainer>
           <div className="w-full flex flex-col md:flex-row">
@@ -29,7 +92,11 @@ function LoginPage() {
                     <div className="relative">
                       <input
                         type="email"
-                        className="input"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className={` ${
+                          error.emailError ? "inputError" : "input"
+                        } `}
                         placeholder="johndoe@gmail.com"
                       />
                     </div>
@@ -40,16 +107,49 @@ function LoginPage() {
                     <label className="auth-input-label">Password</label>
                     <div className="relative">
                       <input
-                        type="password"
-                        className="input"
+                        type={showPass ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className={` ${
+                          error.passError ? "inputError" : "input"
+                        } `}
                         placeholder="Enter your password"
                       />
                     </div>
                   </div>
 
+                  {/* Forgot Passowrd*/}
+
+                  <div className=" flex md:items-center justify-between flex-col md:flex-row ">
+                    <span className="underline text-white hover:opacity-80 cursor-pointer text-sm md:text-lg">
+                      {" "}
+                      <Link to={"/forgotpassowrd"}>Forgot Passowrd</Link>
+                    </span>
+
+                    <div className="flex items-center justify-end gap-4 text-white">
+                      <Checkbox
+                        labelContent={
+                          showPass ? "Hide Password" : "Show Password"
+                        }
+                        isChecked={showPass}
+                        onChange={() => setShowPass(!showPass)}
+                      />
+                    </div>
+                  </div>
                   {/* SUBMIT BUTTON */}
-                  <button className="auth-btn" type="button">
-                    Sign In
+                  <button
+                    className={` ${
+                      loginStates.loading ? "auth-btnError" : "auth-btn"
+                    } `}
+                    onClick={handelLogin}
+                    disabled={loginStates.loading}
+                    type="button"
+                  >
+                    {loginStates.loading ? (
+                      <ApiLoader size={"2em"} text={"Loading"} />
+                    ) : (
+                      "Login"
+                    )}
                   </button>
                 </form>
 
