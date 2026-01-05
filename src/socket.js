@@ -1,16 +1,22 @@
 import { io } from "socket.io-client";
 
 let socket = null;
-let origin = import.meta.env.VITE_BACKEND_ORIGIN
+let origin = import.meta.env.VITE_BACKEND_ORIGIN;
 export const initSocket = () => {
-    if (!socket) {
-        socket = io(origin, {
-            withCredentials: true,
-            autoConnect: false
-        })
+  if (!socket) {
+    socket = io(origin, {
+      withCredentials: true,
+      autoConnect: false,
+    });
+  }
+  return socket;
+};
 
-    }
-    return socket
-}
+export const getSocket = () => socket;
 
-export const getSocket = () => socket
+export const disconnectSocket = () => {
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
+};

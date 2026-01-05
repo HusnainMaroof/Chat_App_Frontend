@@ -1,59 +1,58 @@
 import { initSocket, getSocket } from "../../socket";
 import axios from "axios";
 import {
-    setContected,
-    setOnlineContact,
-    setSokcetConnetingError,
-    setSokcetError,
-    updateSingleUserStatus
+  setContected,
+  setOnlineContact,
+  setSokcetConnetingError,
+  setSokcetError,
+  updateSingleUserStatus,
 } from "./socketSlice";
 
 const origin = `${import.meta.env.VITE_BACKEND_ORIGIN}/api/chat`;
-axios.defaults.withCredentials = true
+axios.defaults.withCredentials = true;
 
 export const socketConnecting = (dispatch) => {
-    const socket = getSocket() || initSocket();
+  const socket = getSocket() || initSocket();
 
-    if (socket.connected) return socket;
+  if (socket.connected) return socket;
 
-    socket.connect();
+  socket.connect();
 
-    socket.on("connect", () => {
-        console.log("Connected to Real-time Gateway");
-        dispatch(setContected(true));
-    });
+  socket.on("connect", () => {
+    console.log("Connected to Real-time Gateway");
+    dispatch(setContected(true));
+  });
 
-    // Received upon initial connection
-    socket.on("initalOnlineUser", (onlineUsers) => {
-        dispatch(setOnlineContact(onlineUsers));
-    });
+  // Received upon initial connection
+  socket.on("initalOnlineUser", (onlineUsers) => {
+    dispatch(setOnlineContact(onlineUsers));
+  });
 
-    // This event is now triggered by Redis Pub/Sub on the backend
-    socket.on("userStatusUpdate", (data) => {
-        const { userId, status } = data;
-        dispatch(updateSingleUserStatus({ userId, status }));
-    });
+  // This event is now triggered by Redis Pub/Sub on the backend
+  socket.on("userStatusUpdate", (data) => {
+    const { userId, status } = data;
+    dispatch(updateSingleUserStatus({ userId, status }));
+  });
 
-    socket.on("disconnect", () => {
-        dispatch(setContected(false));
-    });
+  socket.on("disconnect", () => {
+    dispatch(setContected(false));
+  });
 
-    socket.on("connect_error", (err) => {
-        dispatch(setContected(false));
-        dispatch(setSokcetConnetingError(err.message || "Connection Error"));
-    });
+  socket.on("connect_error", (err) => {
+    dispatch(setContected(false));
+    dispatch(setSokcetConnetingError(err.message || "Connection Error"));
+  });
 
-    return socket;
+  return socket;
 };
 
-
-// get All contact 
+// get All contact
 export const getAllContact = async () => {
-    let res = await axios.get(`${origin}/getMyContact`)
+  let res = await axios.get(`${origin}/getMyContact`);
 
-    return res.data
-}
+  return res.data;
+};
 export const saveContact = async (data) => {
-    let res = await axios.post(`${origin}/save-contact`, data)
-    return res.data
-}
+  let res = await axios.post(`${origin}/save-contact`, data);
+  return res.data;
+};

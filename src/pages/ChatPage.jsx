@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import UsersLoadingSkeleton from "../components/UsersLoadingSkeleton";
 import NoConversationPlaceholder from "../components/NoConversationPlaceholder";
 import { useContext, useEffect } from "react";
-import { getAllContactsThunk } from "../features/socket/socketSlice";
+import { connectSocketThunk, getAllContactsThunk } from "../features/socket/socketSlice";
 import SideBar from "../components/SideBar";
 import { context } from "../context/context";
 import AddContact from "../components/AddContact";
@@ -19,7 +19,9 @@ function ChatPage() {
   useEffect(() => {
     dispatch(getAllContactsThunk());
   }, [dispatch]);
-
+  useEffect(() => {
+    dispatch(connectSocketThunk());
+  }, [dispatch]);
   return (
     <div className="relative w-full md:max-w-6xl h-screen md:h-[90vh] md:my-auto">
       <BorderAnimatedContainer>

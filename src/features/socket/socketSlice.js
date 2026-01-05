@@ -1,138 +1,168 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getAllContact, saveContact, socketConnecting } from "./socketService";
 
-
 const initialState = {
-    allContacts: [],
-    OnlineContact: [],
-    connected: false,
-    socketError: null,
-    connectingStates: { loading: false, error: false, success: false, result: null },
-    getAllContactsStates: { loading: false, error: false, success: false, result: null },
-    saveContactStates: { loading: false, error: false, success: false, result: null },
+  allContacts: [],
+  OnlineContact: [],
+  connected: false,
+  socketError: null,
+  connectingStates: {
+    loading: false,
+    error: false,
+    success: false,
+    result: null,
+  },
+  getAllContactsStates: {
+    loading: false,
+    error: false,
+    success: false,
+    result: null,
+  },
+  saveContactStates: {
+    loading: false,
+    error: false,
+    success: false,
+    result: null,
+  },
 };
-
 
 // Async thunk to initialize the connection from a component
 export const connectSocketThunk = createAsyncThunk(
-    "socket/connect",
-    async (_, { dispatch }) => {
-        await socketConnecting(dispatch)
-        return true;
-    }
+  "socket/connect",
+  async (_, { dispatch }) => {
+    await socketConnecting(dispatch);
+    return true;
+  }
 );
 
-
-// 
+//
 // get All contact
-export const getAllContactsThunk = createAsyncThunk("socket/getAllContact", async (_, thunkAPI) => {
+export const getAllContactsThunk = createAsyncThunk(
+  "socket/getAllContact",
+  async (_, thunkAPI) => {
     try {
-        return await getAllContact()
+      return await getAllContact();
     } catch (error) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message)
+      return thunkAPI.rejectWithValue(error.response?.data?.message);
     }
-})
+  }
+);
 // save Contact
-export const saveContactThunk = createAsyncThunk("socket/saveContact", async (data, thunkAPI) => {
+export const saveContactThunk = createAsyncThunk(
+  "socket/saveContact",
+  async (data, thunkAPI) => {
     try {
-        return await saveContact(data)
+      return await saveContact(data);
     } catch (error) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message)
+      return thunkAPI.rejectWithValue(error.response?.data?.message);
     }
-})
+  }
+);
 
 const socketSlice = createSlice({
-    name: "socket",
-    initialState,
-    reducers: {
-        setOnlineContact: (state, action) => {
-            state.OnlineContact = action.payload;
-        },
-        setContected: (state, action) => {
-            state.connected = action.payload;
-        },
-        setSokcetConnetingError: (state, action) => {
-            state.connectingStates.error = true;
-            state.connectingStates.result = action.payload;
-        },
-        setSokcetError: (state, action) => {
-            state.socketError = action.payload;
-        },
-        // Handles updates for a single user (online/offline)
-        updateSingleUserStatus: (state, action) => {
-            const { userId, status } = action.payload;
-            if (status === "online") {
-                if (!state.OnlineContact.includes(userId)) {
-                    state.OnlineContact.push(userId);
-                }
-            } else {
-                state.OnlineContact = state.OnlineContact.filter(id => id !== userId);
-            }
-        },
-
-
-        resetSaveContactStates: (state, action) => {
-            state.saveContactStates = { loading: false, error: false, success: false, result: null }
-        }
+  name: "socket",
+  initialState,
+  reducers: {
+    setOnlineContact: (state, action) => {
+      state.OnlineContact = action.payload;
     },
-    extraReducers: (builder) => {
-        builder
+    setContected: (state, action) => {
+      state.connected = action.payload;
+    },
+    setSokcetConnetingError: (state, action) => {
+      state.connectingStates.error = true;
+      state.connectingStates.result = action.payload;
+    },
+    setSokcetError: (state, action) => {
+      state.socketError = action.payload;
+    },
+    // Handles updates for a single user (online/offline)
+    updateSingleUserStatus: (state, action) => {
+      const { userId, status } = action.payload;
+      if (status === "online") {
+        if (!state.OnlineContact.includes(userId)) {
+          state.OnlineContact.push(userId);
+        }
+      } else {
+        state.OnlineContact = state.OnlineContact.filter((id) => id !== userId);
+      }
+    },
 
-            // connecting Sokcet
-            .addCase(connectSocketThunk.pending, (state) => {
-                state.connectingStates.loading = true;
-            })
-            .addCase(connectSocketThunk.fulfilled, (state) => {
-                state.connectingStates.loading = false;
-                state.connectingStates.success = true;
-            })
+    resetSaveContactStates: (state, action) => {
+      state.saveContactStates = {
+        loading: false,
+        error: false,
+        success: false,
+        result: null,
+      };
+    },
+    resetSocketStates: (state, action) => {
+      state.OnlineContact = [];
+      state.connected = false;
+      state.connectingStates = {
+        loading: false,
+        error: false,
+        success: false,
+        result: null,
+      };
+    },
+  },
+  extraReducers: (builder) => {
+    builder
 
+      // connecting Sokcet
+      .addCase(connectSocketThunk.pending, (state) => {
+        state.connectingStates.loading = true;
+      })
+      .addCase(connectSocketThunk.fulfilled, (state) => {
+        state.connectingStates.loading = false;
+        state.connectingStates.success = true;
+      })
 
-            // getting All contact
+      // getting All contact
 
-            .addCase(getAllContactsThunk.pending, (state, action) => {
-                state.getAllContactsStates.loading = true
-            })
-            .addCase(getAllContactsThunk.rejected, (state, action) => {
-                state.getAllContactsStates.loading = false
-                state.getAllContactsStates.error = true
-                state.getAllContactsStates.result = action.payload
-            })
-            .addCase(getAllContactsThunk.fulfilled, (state, action) => {
-                state.getAllContactsStates.loading = false
-                state.getAllContactsStates.error = false
-                state.getAllContactsStates.success = true
-                state.getAllContactsStates.result = action.payload
-                state.allContacts = action.payload
-            })
-            // saveContact
+      .addCase(getAllContactsThunk.pending, (state, action) => {
+        state.getAllContactsStates.loading = true;
+      })
+      .addCase(getAllContactsThunk.rejected, (state, action) => {
+        state.getAllContactsStates.loading = false;
+        state.getAllContactsStates.error = true;
+        state.getAllContactsStates.result = action.payload;
+      })
+      .addCase(getAllContactsThunk.fulfilled, (state, action) => {
+        state.getAllContactsStates.loading = false;
+        state.getAllContactsStates.error = false;
+        state.getAllContactsStates.success = true;
+        state.getAllContactsStates.result = action.payload;
+        state.allContacts = action.payload;
+      })
+      // saveContact
 
-            .addCase(saveContactThunk.pending, (state, action) => {
-                state.saveContactStates.loading = true
-            })
-            .addCase(saveContactThunk.rejected, (state, action) => {
-                state.saveContactStates.loading = false
-                state.saveContactStates.error = true
-                state.saveContactStates.result = action.payload
-            })
-            .addCase(saveContactThunk.fulfilled, (state, action) => {
-                state.saveContactStates.loading = false
-                state.saveContactStates.error = false
-                state.saveContactStates.success = true
-                state.saveContactStates.result = action.payload
-            })
-
-    }
+      .addCase(saveContactThunk.pending, (state, action) => {
+        state.saveContactStates.loading = true;
+      })
+      .addCase(saveContactThunk.rejected, (state, action) => {
+        state.saveContactStates.loading = false;
+        state.saveContactStates.error = true;
+        state.saveContactStates.result = action.payload;
+      })
+      .addCase(saveContactThunk.fulfilled, (state, action) => {
+        state.saveContactStates.loading = false;
+        state.saveContactStates.error = false;
+        state.saveContactStates.success = true;
+        state.saveContactStates.result = action.payload;
+      });
+  },
 });
 
 export const {
-    setOnlineContact,
-    setContected,
-    setSokcetConnetingError,
-    setSokcetError,
-    updateSingleUserStatus,
-    resetSaveContactStates
+  setOnlineContact,
+  setContected,
+  setSokcetConnetingError,
+  setSokcetError,
+  updateSingleUserStatus,
+  resetSaveContactStates,
+  resetSocketStates,
 } = socketSlice.actions;
-
 
 export default socketSlice.reducer;

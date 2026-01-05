@@ -13,7 +13,6 @@ import ForGotPassowrd from "./pages/ForGotPassowrd";
 import ReSetPassword from "./pages/ReSetPassword";
 import VerifyOtp from "./pages/VerifyOtp";
 import SetupProfile from "./pages/SetupProfile";
-import { connectSocketThunk } from "./features/socket/socketSlice";
 
 function App() {
   const { authMeStates, user } = useSelector((state) => state.auth);
@@ -21,10 +20,6 @@ function App() {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(authMeFun());
-  }, [dispatch]);
-
-  useEffect(() => {
-    dispatch(connectSocketThunk());
   }, [dispatch]);
 
   if (authMeStates?.loading)

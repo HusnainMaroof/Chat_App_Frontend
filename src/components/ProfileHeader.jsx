@@ -10,7 +10,11 @@ import {
 } from "lucide-react";
 import AddContact from "./AddContact";
 import { useDispatch, useSelector } from "react-redux";
-import { resetSaveContactStates } from "../features/socket/socketSlice";
+import {
+  connectSocketThunk,
+  resetSaveContactStates,
+  resetSocketStates,
+} from "../features/socket/socketSlice";
 import { context } from "../context/context";
 import {
   authMeFun,
@@ -18,9 +22,10 @@ import {
   resetAllStates,
 } from "../features/auth/authSlice";
 import toast from "react-hot-toast";
+import { disconnectSocket } from "../socket";
 
 const ProfileHeader = () => {
-  const { logoutStates } = useSelector((state) => state.auth);
+  const { logoutStates, user } = useSelector((state) => state.auth);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const { isAddContactOpen, setIsAddContactOpen } = useContext(context);
@@ -49,6 +54,8 @@ const ProfileHeader = () => {
     if (logoutStates.result === "logout") {
       dispatch(authMeFun());
       dispatch(resetAllStates());
+      dispatch(resetSocketStates());
+      disconnectSocket();
     }
   }, [logoutStates]);
   return (
@@ -56,8 +63,12 @@ const ProfileHeader = () => {
       {/* User Info / Avatar Section */}
       <div className="flex items-center gap-3">
         <div className="relative group cursor-pointer">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-violet-500 to-fuchsia-500 flex items-center justify-center text-white shadow-lg shadow-violet-500/20 group-hover:scale-105 transition-transform">
-            <UserCircle2 className="h-7 w-7" />
+          <div className="h-14 w-14 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 border border-white/5 group-hover:border-violet-500/30 transition-all overflow-hidden">
+            {user.profilePhoto ? (
+              <img src={user.profilePhoto} alt="" loading="lazy"  className="h-full w-full object-cover"/>
+            ) : (
+              <UserCircle2 className="h-7 w-7" />
+            )}
           </div>
           <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-green-500 border-2 border-[#0f172a] rounded-full shadow-sm"></div>
         </div>
