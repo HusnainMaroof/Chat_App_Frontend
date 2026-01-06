@@ -170,7 +170,7 @@ function LoginPage() {
 
                   {/* Forgot Password & Show Password */}
                   <div className="flex md:items-center justify-between flex-col md:flex-row">
-                    <span className="underline text-white hover:opacity-80 cursor-pointer text-sm md:text-lg">
+                    <span className="underline text-white hover:opacity-80 cursor-pointer ">
                       <Link to={"/forgotpassowrd"}>Forgot Password</Link>
                     </span>
 
