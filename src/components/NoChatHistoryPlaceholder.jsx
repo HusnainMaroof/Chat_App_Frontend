@@ -1,7 +1,7 @@
 import React from "react";
 import { MessageCircleIcon, Sparkles, Send, Zap } from "lucide-react";
 
-const NoChatHistoryPlaceholder = ({ name }) => {
+const NoChatHistoryPlaceholder = ({ name , onchangeSms }) => {
   const suggestions = [
     { text: "Say Hello 👋", icon: <Sparkles className="size-3" /> },
     { text: "How are you?", icon: <Zap className="size-3" /> },
@@ -40,6 +40,7 @@ const NoChatHistoryPlaceholder = ({ name }) => {
       <div className="flex flex-wrap gap-3 justify-center">
         {suggestions.map((item, i) => (
           <button
+            onClick={() => onchangeSms(item.text)}
             key={i}
             className="group flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-slate-300 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl hover:bg-violet-600/20 hover:border-violet-500/30 hover:text-violet-200 transition-all duration-300 active:scale-95"
           >

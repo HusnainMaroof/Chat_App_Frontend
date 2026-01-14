@@ -56,3 +56,9 @@ export const saveContact = async (data) => {
   let res = await axios.post(`${origin}/save-contact`, data);
   return res.data;
 };
+export const getChatHistroy = async (contactId) => {
+  console.log(contactId);
+
+  let res = await axios.get(`${origin}/getContactHistory/${contactId}`);
+  return res.data;
+};

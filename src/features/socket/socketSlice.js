@@ -1,7 +1,13 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getAllContact, saveContact, socketConnecting } from "./socketService";
+import {
+  getAllContact,
+  getChatHistroy,
+  saveContact,
+  socketConnecting,
+} from "./socketService";
 
 const initialState = {
+  messages: [],
   allContacts: [],
   OnlineContact: [],
   connected: false,
@@ -19,6 +25,12 @@ const initialState = {
     result: null,
   },
   saveContactStates: {
+    loading: false,
+    error: false,
+    success: false,
+    result: null,
+  },
+  getChatHistoryStates: {
     loading: false,
     error: false,
     success: false,
@@ -53,6 +65,16 @@ export const saveContactThunk = createAsyncThunk(
   async (data, thunkAPI) => {
     try {
       return await saveContact(data);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message);
+    }
+  }
+);
+export const getChatHistoryThunk = createAsyncThunk(
+  "socket/getChatHistory",
+  async (data, thunkAPI) => {
+    try {
+      return await getChatHistroy(data);
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message);
     }
@@ -106,6 +128,16 @@ const socketSlice = createSlice({
         result: null,
       };
     },
+
+    resetGetChatHistory: (state, action) => {
+      state.getChatHistoryStates = {
+        loading: false,
+        error: false,
+        success: false,
+        result: null,
+      };
+      state.messages = [];
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -151,6 +183,24 @@ const socketSlice = createSlice({
         state.saveContactStates.error = false;
         state.saveContactStates.success = true;
         state.saveContactStates.result = action.payload;
+      })
+
+      //get chat history
+
+      .addCase(getChatHistoryThunk.pending, (state, action) => {
+        state.getChatHistoryStates.loading = true;
+      })
+      .addCase(getChatHistoryThunk.rejected, (state, action) => {
+        state.getChatHistoryStates.loading = false;
+        state.getChatHistoryStates.error = true;
+        state.getChatHistoryStates.result = action.payload;
+      })
+      .addCase(getChatHistoryThunk.fulfilled, (state, action) => {
+        state.getChatHistoryStates.loading = false;
+        state.getChatHistoryStates.error = false;
+        state.getChatHistoryStates.success = true;
+        state.getChatHistoryStates.result = action.payload;
+        state.messages = action.payload;
       });
   },
 });
@@ -163,6 +213,7 @@ export const {
   updateSingleUserStatus,
   resetSaveContactStates,
   resetSocketStates,
+  resetGetChatHistory,
 } = socketSlice.actions;
 
 export default socketSlice.reducer;

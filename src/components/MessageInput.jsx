@@ -1,8 +1,7 @@
 import { Loader2, Paperclip, Send, Smile } from "lucide-react";
 import { useState } from "react";
 
-const MessageInput = ({ onSend }) => {
-  const [text, setText] = useState("");
+const MessageInput = ({ text, setText }) => {
   const [isSending, setIsSending] = useState(false);
 
   const handleSubmit = (e) => {
@@ -10,7 +9,6 @@ const MessageInput = ({ onSend }) => {
     if (!text.trim()) return;
     setIsSending(true);
     setTimeout(() => {
-      onSend({ text });
       setText("");
       setIsSending(false);
     }, 400);
