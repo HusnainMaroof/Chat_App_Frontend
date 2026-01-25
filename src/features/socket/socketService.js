@@ -1,7 +1,9 @@
 import { initSocket, getSocket } from "../../socket";
 import axios from "axios";
 import {
+  appendMessage,
   setContected,
+  setNewContact,
   setOnlineContact,
   setSokcetConnetingError,
   setSokcetError,
@@ -34,6 +36,21 @@ export const socketConnecting = (dispatch) => {
     dispatch(updateSingleUserStatus({ userId, status }));
   });
 
+  //this event is for reciving message
+
+  socket.on("receiveMessage", (data) => {
+    dispatch(appendMessage(data));
+  });
+
+  socket.on("messageSent", (data) => {});
+
+  socket.on("newNotification", (data) => {
+    console.log(data);
+
+    if (data.type === "New_Contact") {
+      dispatch(setNewContact(data.data));
+    }
+  });
   socket.on("disconnect", () => {
     dispatch(setContected(false));
   });
@@ -44,6 +61,16 @@ export const socketConnecting = (dispatch) => {
   });
 
   return socket;
+};
+
+// send message event
+
+export const sendMessageSocket = async (payload) => {
+  const socket = getSocket();
+
+  if (socket) {
+    socket.emit("sendMessage", payload);
+  }
 };
 
 // get All contact

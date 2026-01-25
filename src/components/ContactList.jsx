@@ -1,16 +1,16 @@
 import { Plus, Search, Sparkles, UserCircle2, UserPlus } from "lucide-react";
 import { useContext } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { context } from "../context/context";
 import NoContact from "./NoContact";
+import { setActiveChat } from "../features/socket/socketSlice";
 
 function ContactList() {
   const { allContacts, OnlineContact } = useSelector((state) => state.socket);
-  const { activeChat, setActiveChat, isAddContactOpen, setIsAddContactOpen } =
-    useContext(context);
+
+  const dispatch = useDispatch();
 
   const contacts = allContacts?.contacts || [];
-
 
   if (contacts.length <= 0) return <NoContact />;
 
@@ -43,12 +43,10 @@ function ContactList() {
           online: online,
         };
 
-
-        
         return (
           <div
             key={contact.contactUserId || index}
-            onClick={() => setActiveChat(user)}
+            onClick={() => dispatch(setActiveChat(user))}
             className="group flex h-[76px] cursor-pointer items-center px-3 rounded-2xl hover:bg-white/5 transition-all duration-200"
           >
             {/* Avatar */}

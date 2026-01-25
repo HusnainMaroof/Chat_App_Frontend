@@ -7,13 +7,14 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   getChatHistoryThunk,
   resetGetChatHistory,
+  setActiveChat,
 } from "../features/socket/socketSlice";
 import MessagesLoadingSkeleton from "./MessagesLoadingSkeleton";
+import ChatViewport from "./ChatViewPort";
 
 const ChatContainer = () => {
-  const { activeChat, setActiveChat } = useContext(context);
-  const { getChatHistoryStates, messages } = useSelector(
-    (state) => state.socket
+  const { getChatHistoryStates, messages, activeChat } = useSelector(
+    (state) => state.socket,
   );
   const dispatch = useDispatch();
   const [text, setText] = useState("");
@@ -29,17 +30,8 @@ const ChatContainer = () => {
     };
   }, [activeChat?.contactUserId, dispatch]);
 
-  const handleSendMessage = () => {
-    if (!text.trim()) return;
-
-    // TODO: dispatch send message action / socket emit
-    console.log("Send:", text);
-
-    setText("");
-  };
-
   const handleOnBack = () => {
-    setActiveChat(null);
+    dispatch(setActiveChat(null));
     dispatch(resetGetChatHistory());
   };
 
@@ -56,15 +48,11 @@ const ChatContainer = () => {
             onchangeSms={setText}
           />
         ) : (
-          <div className="flex flex-col gap-2">
-            {messages?.map((msg) => (
-              <div key={msg._id}>{msg.text}</div>
-            ))}
-          </div>
+          <ChatViewport />
         )}
       </div>
 
-      <MessageInput onSend={handleSendMessage} text={text} setText={setText} />
+      <MessageInput text={text} setText={setText} />
     </div>
   );
 };

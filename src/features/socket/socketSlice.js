@@ -8,9 +8,10 @@ import {
 
 const initialState = {
   messages: [],
-  allContacts: [],
+  allContacts: null,
   OnlineContact: [],
   connected: false,
+  activeChat: null,
   socketError: null,
   connectingStates: {
     loading: false,
@@ -36,6 +37,18 @@ const initialState = {
     success: false,
     result: null,
   },
+  sendMessageStates: {
+    loading: false,
+    error: false,
+    success: false,
+    result: null,
+  },
+  reciveMessageStates: {
+    loading: false,
+    error: false,
+    success: false,
+    result: null,
+  },
 };
 
 // Async thunk to initialize the connection from a component
@@ -44,7 +57,7 @@ export const connectSocketThunk = createAsyncThunk(
   async (_, { dispatch }) => {
     await socketConnecting(dispatch);
     return true;
-  }
+  },
 );
 
 //
@@ -57,7 +70,7 @@ export const getAllContactsThunk = createAsyncThunk(
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message);
     }
-  }
+  },
 );
 // save Contact
 export const saveContactThunk = createAsyncThunk(
@@ -68,8 +81,10 @@ export const saveContactThunk = createAsyncThunk(
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message);
     }
-  }
+  },
 );
+
+// get chat history
 export const getChatHistoryThunk = createAsyncThunk(
   "socket/getChatHistory",
   async (data, thunkAPI) => {
@@ -78,13 +93,16 @@ export const getChatHistoryThunk = createAsyncThunk(
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message);
     }
-  }
+  },
 );
 
 const socketSlice = createSlice({
   name: "socket",
   initialState,
   reducers: {
+    setActiveChat: (state, action) => {
+      state.activeChat = action.payload;
+    },
     setOnlineContact: (state, action) => {
       state.OnlineContact = action.payload;
     },
@@ -137,6 +155,22 @@ const socketSlice = createSlice({
         result: null,
       };
       state.messages = [];
+    },
+
+    // messaging states
+
+    appendMessage: (state, action) => {
+      const msg = action.payload;
+
+      state.messages.push(msg);
+    },
+
+    // add new contact list
+
+    setNewContact: (state, action) => {
+      const contact = action.payload;
+
+      state.allContacts.contacts.unshift(contact);
     },
   },
   extraReducers: (builder) => {
@@ -214,6 +248,9 @@ export const {
   resetSaveContactStates,
   resetSocketStates,
   resetGetChatHistory,
+  appendMessage,
+  setActiveChat,
+  setNewContact,
 } = socketSlice.actions;
 
 export default socketSlice.reducer;

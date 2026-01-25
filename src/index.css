@@ -29,7 +29,7 @@
   hover:bg-cyan-600 focus:ring-2 focus:ring-cyan-500;
 }
 .auth-btnError {
-  @apply w-full flex items-center justify-center bg-cyan-200 text-white rounded-lg py-2.5 font-medium
+  @apply w-full flex items-center justify-center bg-cyan-200 text-black rounded-lg py-2.5 font-medium
   hover:bg-cyan-300 cursor-not-allowed;
 }
 

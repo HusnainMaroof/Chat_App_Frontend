@@ -3,16 +3,20 @@ import { useDispatch, useSelector } from "react-redux";
 import UsersLoadingSkeleton from "../components/UsersLoadingSkeleton";
 import NoConversationPlaceholder from "../components/NoConversationPlaceholder";
 import { useContext, useEffect } from "react";
-import { connectSocketThunk, getAllContactsThunk } from "../features/socket/socketSlice";
+import {
+  connectSocketThunk,
+  getAllContactsThunk,
+} from "../features/socket/socketSlice";
 import SideBar from "../components/SideBar";
 import { context } from "../context/context";
 import AddContact from "../components/AddContact";
 import ChatContainer from "../components/ChatContainer";
 
 function ChatPage() {
-  const { getAllContactsStates } = useSelector((state) => state.socket);
-  const { isAddContactOpen, setIsAddContactOpen, activeChat, setActiveChat } =
-    useContext(context);
+  const { getAllContactsStates, activeChat } = useSelector(
+    (state) => state.socket,
+  );
+  const { isAddContactOpen, setIsAddContactOpen } = useContext(context);
 
   const dispatch = useDispatch();
 
