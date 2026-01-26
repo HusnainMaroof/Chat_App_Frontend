@@ -162,7 +162,7 @@ const socketSlice = createSlice({
     appendMessage: (state, action) => {
       const msg = action.payload;
 
-      state.messages.push(msg);
+      state.messages.unshift(msg);
     },
 
     // add new contact list
@@ -171,6 +171,29 @@ const socketSlice = createSlice({
       const contact = action.payload;
 
       state.allContacts.contacts.unshift(contact);
+    },
+
+    // updated the message status
+
+    updateMessageStatus: (state, action) => {
+      const { tempId, status } = action.payload;
+
+      const message = state.messages.find((m) => m.tempId === tempId);
+
+      if (message) {
+        message.status = status;
+      }
+    },
+
+    updateContactLastMessage: (state, action) => {
+      const { contactId, content, timestamp } = action.payload;
+      const contact = state.allContacts.find(
+        (c) => c.contactUserId === contactId,
+      );
+      if (contact) {
+        contact.lastMessage = content;
+        contact.lastMessageAt = timestamp;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -251,6 +274,8 @@ export const {
   appendMessage,
   setActiveChat,
   setNewContact,
+  updateMessageStatus,
+  updateContactLastMessage,
 } = socketSlice.actions;
 
 export default socketSlice.reducer;

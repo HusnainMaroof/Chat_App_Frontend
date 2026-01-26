@@ -3,7 +3,10 @@ import { Loader2, Paperclip, Send, Smile, X, FileImage } from "lucide-react";
 import { sendMessageSocket } from "../features/socket/socketService";
 import { context } from "../context/context";
 import { useDispatch, useSelector } from "react-redux";
-import { appendMessage } from "../features/socket/socketSlice";
+import {
+  appendMessage,
+  updateContactLastMessage,
+} from "../features/socket/socketSlice";
 
 const MessageInput = ({ text, setText }) => {
   const { activeChat } = useSelector((state) => state.socket);
@@ -68,14 +71,26 @@ const MessageInput = ({ text, setText }) => {
         recipientId: activeChat.contactUserId,
         content: { text },
         tempId,
-        status: "sending",
+        status: "sent",
         timestamp: new Date().toISOString(),
       };
 
+      // append this message to message arry
+
+      //
       dispatch(appendMessage(payload));
 
+      // send message event payload
       sendMessageSocket(payload);
 
+      // update contact last message
+      dispatch(
+        updateContactLastMessage({
+          contactId: payload.recipientId,
+          content: payload.content.text,
+          timestamp: payload.timestamp,
+        }),
+      );
       setText("");
       removeImage();
       textareaRef.current?.focus();

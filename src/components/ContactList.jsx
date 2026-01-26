@@ -10,7 +10,7 @@ function ContactList() {
 
   const dispatch = useDispatch();
 
-  const contacts = allContacts?.contacts || [];
+  const contacts = allContacts || [];
 
   if (contacts.length <= 0) return <NoContact />;
 
@@ -27,32 +27,46 @@ function ContactList() {
         </div>
       </div>
       {contacts.map((contact, index) => {
-        let user = {};
-        let online = false;
-        OnlineContact.forEach((element) => {
-          if (element === contact.contactUserId) {
-            online = true;
-          }
-        });
+        let online = OnlineContact.includes(contact.contactUserId);
 
-        user = {
-          email: contact.email,
-          contactUserId: contact.contactUserId,
-          ProfilePic: contact.ProfilePic,
-          name: contact.name,
-          online: online,
-        };
+        const {
+          email,
+          contactUserId,
+          ProfilePic,
+          name,
+          lastMessageAt,
+          lastMessage,
+        } = contact;
+
+        let time = lastMessageAt
+          ? new Date(lastMessageAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            })
+          : "00.00";
+
 
         return (
           <div
             key={contact.contactUserId || index}
-            onClick={() => dispatch(setActiveChat(user))}
+            onClick={() =>
+              dispatch(
+                setActiveChat({
+                  email: contact.email,
+                  contactUserId: contact.contactUserId,
+                  ProfilePic: contact.ProfilePic,
+                  name: contact.name,
+                  online: online,
+                }),
+              )
+            }
             className="group flex h-[76px] cursor-pointer items-center px-3 rounded-2xl hover:bg-white/5 transition-all duration-200"
           >
             {/* Avatar */}
             <div className="relative mr-4 shrink-0">
               <div className="h-14 w-14 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 border border-white/5 group-hover:border-violet-500/30 transition-all overflow-hidden">
-                {user?.ProfilePic ? (
+                {ProfilePic ? (
                   <img
                     src={contact.ProfilePic}
                     alt={contact.name}
@@ -71,15 +85,15 @@ function ContactList() {
             <div className="flex flex-1 flex-col justify-center min-w-0">
               <div className="flex justify-between items-center mb-0.5">
                 <h3 className="font-semibold text-slate-200 truncate pr-2">
-                  {contact.name}
+                  {name}
                 </h3>
-                <span className="text-[10px] text-slate-500 whitespace-nowrap">
-                  {contacts.lastMessageAt ? `${lastMessageAt}` : "00.0"}
+                <span className="text-[12px] text-white/70 font-semibold whitespace-nowrap">
+                  {time}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <p className="truncate text-sm text-slate-400 group-hover:text-slate-300 transition-colors">
-                  {contact.lastMessage || "No messages yet"}
+                  {lastMessage}
                 </p>
               </div>
             </div>

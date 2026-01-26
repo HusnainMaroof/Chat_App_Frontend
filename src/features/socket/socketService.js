@@ -7,6 +7,7 @@ import {
   setOnlineContact,
   setSokcetConnetingError,
   setSokcetError,
+  updateMessageStatus,
   updateSingleUserStatus,
 } from "./socketSlice";
 
@@ -42,10 +43,13 @@ export const socketConnecting = (dispatch) => {
     dispatch(appendMessage(data));
   });
 
-  socket.on("messageSent", (data) => {});
+  socket.on("messageSent", (data) => {
+    dispatch(updateMessageStatus(data));
+  });
 
+  // this is notification event
   socket.on("newNotification", (data) => {
-    console.log(data);
+    // console.log(data);
 
     if (data.type === "New_Contact") {
       dispatch(setNewContact(data.data));
@@ -84,8 +88,6 @@ export const saveContact = async (data) => {
   return res.data;
 };
 export const getChatHistroy = async (contactId) => {
-  console.log(contactId);
-
   let res = await axios.get(`${origin}/getContactHistory/${contactId}`);
   return res.data;
 };
