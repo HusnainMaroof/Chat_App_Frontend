@@ -1,18 +1,31 @@
 import { Plus, Search, Sparkles, UserCircle2, UserPlus } from "lucide-react";
-import { useContext } from "react";
+import React, { useContext, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { context } from "../context/context";
 import NoContact from "./NoContact";
 import { setActiveChat } from "../features/socket/socketSlice";
 
 function ContactList() {
-  const { allContacts, OnlineContact } = useSelector((state) => state.socket);
+  const { allContacts, OnlineContact, messages } = useSelector(
+    (state) => state.socket,
+  );
 
   const dispatch = useDispatch();
 
   const contacts = allContacts || [];
 
-  if (contacts.length <= 0) return <NoContact />;
+ const sortedContacts = useMemo(() => {
+    return [...contacts].sort((a, b) => {
+      const timeA = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+      const timeB = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+      return timeB - timeA;
+    });
+  }, [contacts, messages]);
+
+  
+if (sortedContacts.length === 0) {
+    return <NoContact />;
+  }
 
   return (
     <div className="h-full overflow-y-auto px-2 pb-4 space-y-1 custom-scrollbar">
@@ -26,7 +39,7 @@ function ContactList() {
           />
         </div>
       </div>
-      {contacts.map((contact, index) => {
+      {sortedContacts.map((contact, index) => {
         let online = OnlineContact.includes(contact.contactUserId);
 
         const {
@@ -45,7 +58,6 @@ function ContactList() {
               hour12: true,
             })
           : "00.00";
-
 
         return (
           <div

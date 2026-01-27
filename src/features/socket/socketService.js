@@ -3,12 +3,13 @@ import axios from "axios";
 import {
   appendMessage,
   setContected,
-  setNewContact,
+  appendNewContact,
   setOnlineContact,
   setSokcetConnetingError,
   setSokcetError,
   updateMessageStatus,
   updateSingleUserStatus,
+  updateContactLastMessage,
 } from "./socketSlice";
 
 const origin = `${import.meta.env.VITE_BACKEND_ORIGIN}/api/chat`;
@@ -49,10 +50,19 @@ export const socketConnecting = (dispatch) => {
 
   // this is notification event
   socket.on("newNotification", (data) => {
-    // console.log(data);
+    if (data.type === "New_Message") {
+      const newData = {
+        contactId: data.data.messageData.senderId,
+        timestamp: data.data.messageData.timestamp,
+        content: data.data.messageData.content.text,
+      };
+
+
+      dispatch(updateContactLastMessage(newData));
+    }
 
     if (data.type === "New_Contact") {
-      dispatch(setNewContact(data.data));
+      dispatch(appendNewContact(data.data));
     }
   });
   socket.on("disconnect", () => {

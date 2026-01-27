@@ -8,7 +8,7 @@ import {
 
 const initialState = {
   messages: [],
-  allContacts: null,
+  allContacts: [],
   OnlineContact: [],
   connected: false,
   activeChat: null,
@@ -167,10 +167,11 @@ const socketSlice = createSlice({
 
     // add new contact list
 
-    setNewContact: (state, action) => {
+    appendNewContact: (state, action) => {
       const contact = action.payload;
+      console.log(contact);
 
-      state.allContacts.contacts.unshift(contact);
+      state.allContacts.unshift(contact);
     },
 
     // updated the message status
@@ -187,6 +188,7 @@ const socketSlice = createSlice({
 
     updateContactLastMessage: (state, action) => {
       const { contactId, content, timestamp } = action.payload;
+
       const contact = state.allContacts.find(
         (c) => c.contactUserId === contactId,
       );
@@ -273,7 +275,7 @@ export const {
   resetGetChatHistory,
   appendMessage,
   setActiveChat,
-  setNewContact,
+  appendNewContact,
   updateMessageStatus,
   updateContactLastMessage,
 } = socketSlice.actions;
